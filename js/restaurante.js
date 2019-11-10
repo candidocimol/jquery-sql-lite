@@ -128,9 +128,29 @@ Restaurante=function(id,nome,email,telefone,logradouro, numero, bairro, cidade){
 	this.update=function(){
 
 	};
-	this.delete=function(){
 
-	};
+	this.delete=function(id, callback){
+		query = "DELETE FROM restaurante WHERE id="+id+" ;";
+		console.log(query);
+		try {
+	        sqlLite.localDB.transaction(function(transaction){
+	        	transaction.executeSql(query, [], function(transaction, results){
+	        		console.log(transaction);
+	                if (!results.rowsAffected) {
+	                    console.log("Erro: Delete não realizado.");
+	                }
+	                else {
+	                    console.log("Linhas deletadas:" + results.rowsAffected);
+	                }
+	            });
+	            
+	        });
+	    } 
+	    catch (e) {
+
+	        console.log("Erro: DELETE não realizado " + e + ".");
+	    }
+    };
 
 }
 
@@ -158,25 +178,37 @@ $("#save").click(function(){
 
 
 
-	function list(){
-		restaurante=new Restaurante();
-		restaurante.findAll(function(resultado){
-			if(resultado){
-				$("#itensData").empty();
-				for(i=0;i<resultado.length;i++)	{
-					console.log(resultado[i]);
-					$("#itensData").append(
-						"<tr><td>"+resultado[i].id+
-						"</td><td>"+resultado[i].nome+
-						"</td><td>"+resultado[i].email+
-						"</td><td>"+resultado[i].telefone+
-						"</td><td>"+resultado[i].logradouro+", "+resultado[i].numero+", "+resultado[i].bairro+", "+resultado[i].cidade+
-						"</td><td></td>"+
-						"</tr>"
-					);
-				}
+function list(){
+	restaurante=new Restaurante();
+	restaurante.findAll(function(resultado){
+		if(resultado){
+			$("#itensData").empty();
+			for(i=0;i<resultado.length;i++)	{
+				console.log(resultado[i]);
+				$("#itensData").append(
+					"<tr><td>"+resultado[i].id+
+					"</td><td>"+resultado[i].nome+
+					"</td><td>"+resultado[i].email+
+					"</td><td>"+resultado[i].telefone+
+					"</td><td>"+resultado[i].logradouro+", "+resultado[i].numero+", "+resultado[i].bairro+", "+resultado[i].cidade+
+					"</td><td>"+
+					 	"<button id='"+resultado[i].id+"' class='excluir'>x</button>"+
+					"</td>"+
+					"</tr>"
+				);
 			}
-		});
-	}
+			$(document).on('click', '.excluir', function(){
+				element=$(this);
 
-	list();
+			    id=element.attr('id');
+				restaurante.delete(id, function(){
+					list();
+				});
+				
+			});
+
+		}
+	});
+}
+
+list();
